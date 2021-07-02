@@ -1,4 +1,4 @@
-#include <iostream>
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -61,7 +61,7 @@ int main(){
 	terminal_login();
 	floop{
 	command_in:
-		wcout << ">> ";
+		putstr(L">> ");
 		wstring command,tab_head,tab_end;
 		size_t tab_num=0;
 		size_t insert_index=0;
