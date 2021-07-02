@@ -9,6 +9,8 @@ void terminal_run(const wstring&command);
 void terminal_exit();
 ```
 
-### LICENSE  
+sample: [ghost_terminal]( https://github.com/steve02081504/ghost_terminal )
+
+### LICENSE(with out wcwidth.c)  
 WTFPL v2  
 You just DO WHAT THE FUCK YOU WANT TO.  
