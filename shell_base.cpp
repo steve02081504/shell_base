@@ -107,10 +107,11 @@ int main(){
 					edit_history_index--;
 				goto load_history;
 			case 25://ctrl-y redo
-				if(edit_history_index<edit_history_command.size()-1)
-					edit_history_index++;
+				edit_history_index++;
 				goto load_history;
 			load_history:
+				if(edit_history_index<edit_history_command.size()-1)
+					edit_history_index=edit_history_command.size()-1;
 				reflash_command(insert_index,command,edit_history_command[edit_history_index]);
 				move_insert_index(insert_index,edit_history_insert_index[edit_history_index],command);
 				break;
@@ -176,6 +177,8 @@ int main(){
 				}
 				break;
 			default:
+				if(wcwidth(c)<1)
+					break;
 				auto old_command=command;
 				command.insert(insert_index,1,c);
 				reflash_command(insert_index,old_command,command);
