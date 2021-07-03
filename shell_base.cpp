@@ -97,6 +97,10 @@ int main(){
 					return 0;
 				else
 					goto run_command;
+			case 24://ctrl-x
+				setClipboard(command);
+				command.clear();
+				break;
 			case 3://ctrl-c
 				setClipboard(command);
 				break;
