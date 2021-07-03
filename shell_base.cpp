@@ -80,9 +80,10 @@ int main(){
 	command_in:
 		putstr(L">> ");
 		wstring command,tab_head,tab_end;
-		size_t tab_num=0;
-		size_t insert_index=0;
+		size_t tab_num=0,insert_index=0,edit_history_index=0;
 		size_t history_index=command_history.size();
+		vector<wstring>edit_history_command{L""};
+		vector<size_t>edit_history_insert_index{0};
 		command_history.push_back(L"");
 		floop{
 			auto c=_getwch();
@@ -100,6 +101,18 @@ int main(){
 			case 24://ctrl-x
 				setClipboard(command);
 				command.clear();
+				break;
+			case 26://ctrl-z Undo
+				if(edit_history_index)
+					edit_history_index--;
+				goto load_history;
+			case 25://ctrl-y redo
+				if(edit_history_index<edit_history_command.size()-1)
+					edit_history_index++;
+				goto load_history;
+			load_history:
+				reflash_command(insert_index,command,edit_history_command[edit_history_index]);
+				move_insert_index(insert_index,edit_history_insert_index[edit_history_index],command);
 				break;
 			case 3://ctrl-c
 				setClipboard(command);
@@ -173,6 +186,14 @@ int main(){
 				tab_num++;
 			else
 				tab_num=0;
+			if(c!=25&&c!=26)
+				if(command!=edit_history_command.back()){
+					edit_history_command.resize(insert_index+1);
+					edit_history_insert_index.resize(insert_index+1);
+					edit_history_command.push_back(command);
+					edit_history_insert_index.push_back(insert_index);
+					edit_history_index++;
+				}
 		}
 	run_command:
 		command_history[command_history.size()-1]=command;
