@@ -9,6 +9,8 @@ wstring terminal_tab_press(const wstring&command,size_t tab_num);
 void terminal_run(const wstring&command);
 void terminal_exit();
 
+void setClipboard(const wstring& str);
+wstring getClipboard();
 
 #define floop while(1)
 extern "C" int wcwidth(wchar_t);
@@ -55,6 +57,21 @@ void move_insert_index(size_t&insert_index,size_t new_insert_index,const wstring
 
 	insert_index=new_insert_index;
 }
+
+/*
+#include <iostream>
+int main(){
+	floop{
+		auto tmp=_getwch();
+		wcout << tmp;
+		if(tmp==0||tmp==0xE0)
+			wcout << "    " << _getwch();
+		wcout << endl;
+	}
+}
+
+/*/
+
 int main(){
 	before_login();
 	vector<wstring>command_history;
@@ -70,11 +87,27 @@ int main(){
 		floop{
 			auto c=_getwch();
 			switch(c){
+			case 27://esc
+				return 0;
 			case 13://enter
 				_putwch('\n');
-				[[fallthrough]];
-			case WEOF:
 				goto run_command;
+			case WEOF:
+				if(command.empty())
+					return 0;
+				else
+					goto run_command;
+			case 3://ctrl-c
+				setClipboard(command);
+				break;
+			case 22:{//ctrl-v
+				auto insert_text=getClipboard();
+				auto old_command=command;
+				command.insert(insert_index,insert_text);
+				reflash_command(insert_index,old_command,command);
+				move_insert_index(insert_index,insert_index+insert_text.size(),command);
+				break;
+			}
 			case 9:{//tab
 				if(tab_num==0){
 					tab_head=command.substr(0,insert_index);
@@ -147,3 +180,4 @@ int main(){
 	terminal_exit();
 	return 0;
 }
+//*/
