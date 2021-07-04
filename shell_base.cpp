@@ -9,10 +9,11 @@ wstring terminal_tab_press(const wstring&command,size_t tab_num);
 void terminal_run(const wstring&command);
 void terminal_exit();
 
+#define floop while(1)
+
 void setClipboard(const wstring& str);
 wstring getClipboard();
 
-#define floop while(1)
 extern "C" int wcwidth(wchar_t);
 
 size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos){
@@ -72,10 +73,24 @@ int main(){
 
 /*/
 
-int main(){
+int wmain(size_t argc,wchar_t**argv){
 	before_login();
 	vector<wstring>command_history;
 	terminal_login();
+	if(argc>=2){
+		wstring_view arg1=argv[1];
+		if(arg1==L"-c"){
+			size_t tmp=1;
+			wstring command;
+			while(tmp++!=argc-1){
+				command+=L' ';
+				command+=(wstring_view)argv[tmp];
+			}
+			command.erase(0,1);
+			terminal_run(command);
+			return 0;
+		}
+	}
 	floop{
 	command_in:
 		putstr(L">> ");
