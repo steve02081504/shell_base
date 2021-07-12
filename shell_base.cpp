@@ -1,20 +1,20 @@
 #include <string>
 #include <vector>
 
+#include "wcwidth.hpp"
+#include "shell_base.hpp"
+#include "clipboard.hpp"
+#include "Cursor.hpp"
+
+#ifdef _DEBUG
+#include <iostream>
+#endif
+
+
+
 using namespace std;
 
-void before_login();
-void terminal_login();
-wstring terminal_tab_press(const wstring&command,size_t tab_num);
-void terminal_run(const wstring&command);
-void terminal_exit();
-
 #define floop while(1)
-
-void setClipboard(const wstring& str);
-wstring getClipboard();
-
-extern "C" int wcwidth(wchar_t);
 
 size_t GetStrWide(const wstring&str,size_t begin=0,size_t end=wstring::npos){
 	size_t aret=0;
@@ -33,28 +33,34 @@ void putchar_x_time(wchar_t the_char,size_t time){
 	while(time--)
 		_putwch(the_char);
 }
-void reflash_command(size_t&insert_index,wstring&command,const wstring&new_command){
-	auto size_defore_index=GetStrWide(command,0,insert_index);
-	auto size_after_index=GetStrWide(command,insert_index);
-	auto size_all=size_defore_index+size_after_index;
-	putchar_x_time(' ',size_after_index);
-	putchar_x_time('\b',size_all);
-	putchar_x_time(' ',size_defore_index);
-	putchar_x_time('\b',size_defore_index);
-	putstr(new_command);
-	auto size_of_new_command=GetStrWide(new_command);
-	if(size_of_new_command>size_defore_index)
-		putchar_x_time('\b',size_of_new_command-size_defore_index);
-	else
-		insert_index=new_command.size();
 
+void reflash_command(size_t&insert_index,wstring&command,const wstring&new_command){
+	auto size_all=GetStrWide(command);
+	resetCursorPos();
+	putchar_x_time(' ',size_all);
+	#ifdef _DEBUG
+	wcout<<"\n\n\ncommand_size: "<<new_command.size()<<"   ";
+	#endif
+	resetCursorPos();
+	putstr(new_command);
+	resetCursorPos();
+	putstr(new_command.substr(0,insert_index));
 	command=new_command;
 }
 void move_insert_index(size_t&insert_index,size_t new_insert_index,const wstring&command){
-	if(new_insert_index > insert_index)
+	#ifdef _DEBUG
+	wcout<<"\n\ninsert_index: "<<new_insert_index<<"   ";
+	resetCursorPos();
+	putstr(command.substr(0,insert_index));
+	#endif
+	if(new_insert_index >= insert_index)
 		putstr(command.substr(insert_index,new_insert_index-insert_index));
-	else
-		putchar_x_time('\b',GetStrWide(command,new_insert_index,insert_index));
+	else{
+		resetCursorPos();
+		putstr(command.substr(0,new_insert_index));
+	}
+	if(insert_index>command.size())
+		insert_index=command.size();
 
 	insert_index=new_insert_index;
 }
@@ -94,6 +100,7 @@ int wmain(size_t argc,wchar_t**argv){
 	floop{
 	command_in:
 		putstr(L">> ");
+		saveCursorPos();
 		wstring command,tab_head,tab_end;
 		size_t tab_num=0,insert_index=0,edit_history_index=0;
 		size_t history_index=command_history.size();
@@ -101,7 +108,9 @@ int wmain(size_t argc,wchar_t**argv){
 		vector<size_t>edit_history_insert_index{0};
 		command_history.push_back(L"");
 		floop{
+			showCursor();
 			auto c=_getwch();
+			hideCursor();
 			switch(c){
 			case 27://esc
 				return 0;
@@ -125,7 +134,7 @@ int wmain(size_t argc,wchar_t**argv){
 				edit_history_index++;
 				goto load_history;
 			load_history:
-				if(edit_history_index<edit_history_command.size()-1)
+				if(edit_history_index>edit_history_command.size()-1)
 					edit_history_index=edit_history_command.size()-1;
 				reflash_command(insert_index,command,edit_history_command[edit_history_index]);
 				move_insert_index(insert_index,edit_history_insert_index[edit_history_index],command);
@@ -186,9 +195,9 @@ int wmain(size_t argc,wchar_t**argv){
 			case 8://backspace
 				if(insert_index){
 					auto old_command=command;
-					move_insert_index(insert_index,insert_index-1,command);
-					command.erase(insert_index,1);
+					command.erase(insert_index-1,1);
 					reflash_command(insert_index,old_command,command);
+					move_insert_index(insert_index,insert_index-1,command);
 				}
 				break;
 			default:
@@ -197,7 +206,7 @@ int wmain(size_t argc,wchar_t**argv){
 				auto old_command=command;
 				command.insert(insert_index,1,c);
 				reflash_command(insert_index,old_command,command);
-				_putwch(command[insert_index++]);
+				move_insert_index(insert_index,insert_index+1,command);
 				break;
 			}
 			if(c==9)
