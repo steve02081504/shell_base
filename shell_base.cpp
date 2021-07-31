@@ -189,6 +189,13 @@ int wmain(size_t argc,wchar_t**argv){
 						_putwch(command[insert_index++]);
 					}
 					break;
+				case 83://delete
+					if(insert_index<command.size()){
+						auto old_command=command;
+						command.erase(insert_index,1);
+						reflash_command(insert_index,old_command,command);
+					}
+					break;
 				}
 				break;
 			}
