@@ -1,10 +1,10 @@
 #include <string>
 #include <vector>
 
-#include "wcwidth.hpp"
+#include "my-gists/cpp/wcwidth.hpp"//wcwidth
+#include "my-gists/windows/clipboard.hpp"//setClipboard、getClipboard
+#include "my-gists/windows/Cursor.hpp"//hideCursor、showCursor、saveCursorPos、resetCursorPos
 #include "shell_base.hpp"
-#include "clipboard.hpp"
-#include "Cursor.hpp"
 
 #ifdef _DEBUG
 #include <iostream>
