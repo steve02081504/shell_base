@@ -5,6 +5,8 @@
 #include "my-gists/windows/clipboard.hpp"//setClipboard、getClipboard
 #include "my-gists/windows/Cursor.hpp"//hideCursor、showCursor、saveCursorPos、resetCursorPos
 #include "shell_base.hpp"
+#define NOMINMAX
+#include <windows.h>
 
 #ifdef _DEBUG
 #include <iostream>
@@ -78,25 +80,28 @@ int main(){
 }
 
 /*/
-
+BOOL WINAPI ConsoleHandler(DWORD CEvent)
+{
+	switch(CEvent)
+	{
+		case CTRL_CLOSE_EVENT:
+			terminal_exit();
+			break;
+	}
+	return TRUE;
+}
 int wmain(size_t argc,wchar_t**argv){
+	SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE);
 	before_login();
 	vector<wstring>command_history;
-	terminal_login();
-	if(argc>=2){
-		wstring_view arg1=argv[1];
-		if(arg1==L"-c"){
-			size_t tmp=1;
-			wstring command;
-			while(tmp++!=argc-1){
-				command+=L' ';
-				command+=(wstring_view)argv[tmp];
-			}
-			command.erase(0,1);
-			terminal_run(command);
-			return 0;
-		}
+	{
+		vector<wstring> argv_t(argc);
+		auto tmp = argc;
+		while (tmp--)
+			argv_t[tmp] = argv[tmp];
+		terminal_args(argc, argv_t);
 	}
+	terminal_login();
 	floop{
 	command_in:
 		putstr(L">> ");

@@ -3,6 +3,7 @@
 define and run  
 ```c++
 void before_login();
+void terminal_args(size_t argc, vector<wstring>&argv);
 void terminal_login();
 wstring terminal_tab_press(const wstring&command,size_t tab_num);
 void terminal_run(const wstring&command);
