@@ -1,4 +1,4 @@
-### How ro use  
+### How to use  
 
 define and run  
 ```c++
