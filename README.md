@@ -1,3 +1,6 @@
+# No longer maintained  
+# Migrated to: https://github.com/steve02081504/my-gists/blob/master/windows/shell_base.cpp
+
 ### How to use  
 
 define and run  
